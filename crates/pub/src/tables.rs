@@ -9,6 +9,9 @@ use designcraft_geom::Rect;
 use std::ops::Range;
 
 const MAX_CELLS: usize = 10_000;
+/// Publisher's per-cell borders are not decoded, so every cell gets this thin black line, matching
+/// the hairlines Publisher exports (about 0.6 pt) in a reference PDF. It is an approximation, not data.
+const APPROX_BORDER_WEIGHT: f64 = 0.6;
 fn bad(message: &str) -> PubError {
     PubError::Malformed(format!("table: {message}"))
 }
@@ -343,7 +346,8 @@ impl Builder<'_> {
         let merged = info.cells.iter().any(|c| c.row != c.last_row || c.col != c.last_col);
         let can_assign = ranges.is_some_and(|r| !merged || r.iter().all(Range::is_empty));
         let mut table = Table::new(self.doc.alloc(), info.rows.len(), info.columns.len(), 0, 0, rect.width());
-        table.options.border = CellStroke::none();
+        let approx_border = CellStroke { weight: APPROX_BORDER_WEIGHT, ..CellStroke::default() };
+        table.options.border = approx_border.clone();
         for (row, height) in table.rows.iter_mut().zip(&info.rows) {
             row.height = pt(f64::from(*height));
         }
@@ -351,7 +355,7 @@ impl Builder<'_> {
             col.width = pt(f64::from(*width));
         }
         for cell in &mut table.cells {
-            cell.strokes = std::array::from_fn(|_| CellStroke::none());
+            cell.strokes = std::array::from_fn(|_| approx_border.clone());
             cell.border_overrides = [true; 4];
         }
         let bytes = byte_positions(&qs.units);
@@ -377,8 +381,10 @@ impl Builder<'_> {
         if !can_assign {
             self.warnings.push("Table cell-text association is unconfirmed or missing; the original text was retained after the table.".into());
         }
-        self.warnings
-            .push("Publisher table cell fills, borders, padding and other cell formatting are not decoded; unpainted cells were used.".into());
+        self.warnings.push(
+            "Publisher table borders are not decoded; every cell has a thin black border as an approximation. Cell fills, padding and other cell formatting are not decoded."
+                .into(),
+        );
         Ok(id)
     }
 }
@@ -511,11 +517,11 @@ mod tests {
             assert_eq!(cell.text.text, text);
             cell.text.check().unwrap();
             assert!(!cell.has_fill());
-            assert!(cell.strokes.iter().all(|s| !s.is_visible()));
+            assert!(cell.strokes.iter().all(|s| s.is_visible() && s.weight == APPROX_BORDER_WEIGHT));
             assert_eq!(cell.text.char_format_at(0).over.font_style.as_deref(), Some("Bold"));
         }
-        assert!(!t.options.border.is_visible());
-        assert!(imp.warnings.iter().any(|w| w.contains("cell fills, borders")));
+        assert!(t.options.border.is_visible());
+        assert!(imp.warnings.iter().any(|w| w.contains("borders are not decoded") && w.contains("approximation")));
     }
     #[test]
     fn merged_regions_use_coordinates_and_keep_covered_cells_empty() {

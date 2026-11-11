@@ -41,7 +41,8 @@ Every open returns:
 ## What does not (each reported as a warning or a note)
 
 - Publisher 97, 98 and 2000 files: refused with a message to re-save in Publisher 2002 or later.
-- Table cell fills, borders and padding; WordArt warps other than the default arch, and exact
+- Table cell fills and padding, and the real table borders (every cell gets a thin black line as an
+  approximation); WordArt warps other than the default arch, and exact
   letter stretching; pattern and texture fills (approximated by the fill colour); picture fills;
   crops other than rectangular; PICT pictures (an empty graphic frame keeps their place); text,
   bitmaps, arcs and pattern fills inside WMF/EMF pictures; custom tab stops; numbering; fields such

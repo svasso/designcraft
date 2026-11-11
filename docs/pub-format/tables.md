@@ -74,15 +74,29 @@ unconfirmed; retain text and warn when that association is ambiguous.
 ## Cell fills and borders: unconfirmed
 
 The three fixtures have no independent cell-fill or border-setting variants.
-Their Quill `MCLD` sections contain one formatting block per cell (130 bytes per
-block in these files). Block fields include 0x00–0x03 values near 0x1F00 and
+Their Quill `MCLD` sections contain one block per cell (130 bytes per block in
+these files). Block fields include 0x00–0x03 values near 0x1F00 and
 0x06–0x09 = 36576; no differing setting establishes their interpretation.
 Escher supplies table-frame line properties but does not establish per-cell
 formatting. Do not reinterpret the unknown MCLD integers as RGB colours, line
-weights, or swatch indices. Import confirmed geometry, merges and text; use
-unpainted cell fills/edges and warn explicitly that cell fills, borders and
-other cell formatting were not decoded. In particular, clear DesignCraft's
-normal default black borders rather than inventing them.
+weights, or swatch indices.
+
+A real four-table publication with a Publisher-exported PDF as ground truth
+(thin lines on every cell, black in one table and blue in the others, and a
+filled header row in one) showed that its `MCLD` blocks are in row-major order
+per table, that field 0x04 equals the column width in EMU, and that fields
+0x00–0x03 repeat along rows and columns like cell coordinates. No field
+varied in a way that matches the borders or fills the PDF draws, and the
+Contents cell records and the Escher table frame carry no such data either.
+Colours exist in the Contents palette and a Quill `PL ` section, but no cell
+reference to them was found. Border and fill encoding therefore remains
+unconfirmed.
+
+Import confirmed geometry, merges and text. Because borders cannot be read,
+give every cell and the table frame a thin black line (0.6 pt, the hairline
+weight measured in that PDF) so the grid stays visible, and warn explicitly
+that this is an approximation and that fills, padding and other cell
+formatting were not decoded.
 
 ## Native mapping and limits
 
