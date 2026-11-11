@@ -33,7 +33,10 @@ Every open returns:
   pictures as vector SVG.
 - WordArt as editable text with its font, style, alignment and letter fill and line. The default
   upward arch follows its curved path; other warps come over straight.
-- Tables with their row and column sizes, merged cells and cell text.
+- Tables with their row and column sizes, merged cells and cell text. In a publication with several
+  stories, a table's cell text is recovered when each table has its own cell-text (TCD) section, its
+  boundaries match only that table's story, and the cells are a plain grid. Any table that cannot be
+  matched this way keeps its text after the table and is reported as a warning.
 
 ## What does not (each reported as a warning or a note)
 
